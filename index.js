@@ -22,25 +22,20 @@ let hangerEnabled = false;
 let hangerInterval = null;
 let targetSessions = {};
 
-// --- VIRUS IDs (Yahan apni 10 IDs daalen) ---
+// --- VIRUS IDs (Updated to 4 IDs only) ---
 const VIRUS_IDS = [
-  "https://www.facebook.com/share/1a77kpeA7K/?mibextid=wwXIfr",
-  "https://www.facebook.com/share/1DEV15gaDN/?mibextid=wwXIfr", 
-  "https://www.facebook.com/share/1Baf6nKDwd/?mibextid=wwXIfr",
-  "https://www.facebook.com/share/1CSiL6yVmX/?mibextid=wwXIfr",
-  "https://www.facebook.com/share/1CLQAh9CCd/?mibextid=wwXIfr",
-  "https://www.facebook.com/share/17hUrJQTbQ/?mibextid=wwXIfr",
-  "https://www.facebook.com/share/16o6wa9z2a/?mibextid=wwXIfr",
-  "https://www.facebook.com/share/1a675oxW5P/?mibextid=wwXIfr",
-  "https://www.facebook.com/share/14MgTmmKxKM/?mibextid=wwXIfr",
+  "100070465039177",
+  "61581483331791", 
+  "61582930406944",
+  "61581483331791" // You can replace this with another ID if needed
 ];
 
-const signature = `\n                      ♦♦♦♦♦\n            ─꯭─⃝𝗔𝗔𝗛𝗔𝗡 𝗛𝟯𝗥𝟯🤍🪽`;
-const separator = `\n---😏----------😈------------🤒---`;
+const signature = \n                      ♦♦♦♦♦\n            ─꯭─⃝𝗔𝗔𝗛𝗔𝗡 𝗛𝟯𝗥𝟯🤍🪽;
+const separator = \n---😏----------😈------------🤒---;
 
 // --- UTILITY FUNCTIONS ---
 function emitLog(message, isError = false) {
-  const logMessage = `[${new Date().toISOString()}] ${isError ? '❌ ERROR: ' : '✅ INFO: '}${message}`;
+  const logMessage = [${new Date().toISOString()}] ${isError ? '❌ ERROR: ' : '✅ INFO: '}${message};
   console.log(logMessage);
   io.emit('botlog', logMessage);
 }
@@ -70,7 +65,7 @@ function initializeBot(cookies, prefix, adminID) {
 
   login({ appState: cookies }, (err, api) => {
     if (err) {
-      emitLog(`❌ Login error: ${err.message}. Retrying in 10 seconds.`, true);
+      emitLog(❌ Login error: ${err.message}. Retrying in 10 seconds., true);
       setTimeout(() => initializeBot(cookies, prefix, adminID), 10000);
       return;
     }
@@ -96,7 +91,7 @@ function initializeBot(cookies, prefix, adminID) {
 function startListening(api) {
   api.listenMqtt(async (err, event) => {
     if (err) {
-      emitLog(`❌ Listener error: ${err.message}. Attempting to reconnect...`, true);
+      emitLog(❌ Listener error: ${err.message}. Attempting to reconnect..., true);
       reconnectAndListen();
       return;
     }
@@ -114,20 +109,20 @@ function startListening(api) {
         await handleParticipantLeft(api, event);
       }
     } catch (e) {
-      emitLog(`❌ Handler crashed: ${e.message}. Event: ${event.type}`, true);
+      emitLog(❌ Handler crashed: ${e.message}. Event: ${event.type}, true);
     }
   });
 }
 
 function reconnectAndListen() {
   reconnectAttempt++;
-  emitLog(`🔄 Reconnect attempt #${reconnectAttempt}...`, false);
+  emitLog(🔄 Reconnect attempt #${reconnectAttempt}..., false);
 
   if (botAPI) {
     try {
       botAPI.stopListening();
     } catch (e) {
-      emitLog(`❌ Failed to stop listener: ${e.message}`, true);
+      emitLog(❌ Failed to stop listener: ${e.message}, true);
     }
   }
 
@@ -155,30 +150,66 @@ async function setBotNicknamesInGroups() {
             const threadInfo = await botAPI.getThreadInfo(thread.threadID);
             if (threadInfo && threadInfo.nicknames && threadInfo.nicknames[botID] !== botNickname) {
                 await botAPI.changeNickname(botNickname, thread.threadID, botID);
-                emitLog(`✅ Bot's nickname set in group: ${thread.threadID}`);
+                emitLog(✅ Bot's nickname set in group: ${thread.threadID});
             }
         } catch (e) {
-            emitLog(`❌ Error setting nickname in group ${thread.threadID}: ${e.message}`, true);
+            emitLog(❌ Error setting nickname in group ${thread.threadID}: ${e.message}, true);
         }
         await new Promise(resolve => setTimeout(resolve, 500));
     }
   } catch (e) {
-    emitLog(`❌ Error getting thread list for nickname check: ${e.message}`, true);
+    emitLog(❌ Error getting thread list for nickname check: ${e.message}, true);
   }
 }
 
 async function sendStartupMessage() {
   if (!botAPI) return;
-  const startupMessage = `🖕🏻😈MAALIK MAIN AAGYA BOLO KISKI MAA CHODANI HAI😈🖕🏻`;
+  const startupMessage = 🖕🏻😈MAALIK MAIN AAGYA BOLO KISKI MAA CHODANI HAI😈🖕🏻;
   try {
     const threads = await botAPI.getThreadList(100, null, ['GROUP']);
     for (const thread of threads) {
         botAPI.sendMessage(startupMessage, thread.threadID)
-          .catch(e => emitLog(`❌ Error sending startup message to ${thread.threadID}: ${e.message}`, true));
+          .catch(e => emitLog(❌ Error sending startup message to ${thread.threadID}: ${e.message}, true));
         await new Promise(resolve => setTimeout(resolve, 500));
     }
   } catch (e) {
-    emitLog(`❌ Error getting thread list for startup message: ${e.message}`, true);
+    emitLog(❌ Error getting thread list for startup message: ${e.message}, true);
+  }
+}
+
+// --- BOTOUT FEATURE ---
+async function handleBotOutCommand(api, event, args, isAdmin) {
+  const { threadID, senderID } = event;
+  if (!isAdmin) {
+    const reply = await formatMessage(api, event, "Permission denied, you are not the admin.");
+    return await api.sendMessage(reply, threadID);
+  }
+
+  try {
+    // Send goodbye message before leaving
+    const goodbyeMessage = await formatMessage(api, event, 
+      😈 𝐁𝐎𝐓 𝐎𝐔𝐓 𝐒𝐘𝐒𝐓𝐄𝐌 😈\n\n +
+      MAALIK NE BULAYA HAI, NIKALTA HU 😼\n +
+      AAHAN PAPA KA LODA CHALTA HAI 😈\n +
+      PHIR MILENGE TERI BHAN KI CHUT ME 😼
+    );
+    
+    await api.sendMessage(goodbyeMessage, threadID);
+    
+    // Wait for 2 seconds then leave the group
+    setTimeout(async () => {
+      try {
+        await api.removeUserFromGroup(api.getCurrentUserID(), threadID);
+        emitLog(✅ Bot successfully left group: ${threadID});
+      } catch (error) {
+        emitLog(❌ Error leaving group ${threadID}: ${error.message}, true);
+      }
+    }, 2000);
+    
+  } catch (error) {
+    emitLog(❌ Botout error: ${error.message}, true);
+    const errorReply = await formatMessage(api, event, "❌ Group leave karne mein error aa gaya!");
+    await api.sendMessage(errorReply, threadID);
   }
 }
 
@@ -194,7 +225,7 @@ async function handleParticipantLeft(api, event) {
     const botID = api.getCurrentUserID();
     if (leftParticipantID === botID) return;
     
-    emitLog(`🚫 Anti-out: User ${leftParticipantID} left group ${threadID}. Adding back...`);
+    emitLog(🚫 Anti-out: User ${leftParticipantID} left group ${threadID}. Adding back...);
     
     await api.addUserToGroup(leftParticipantID, threadID);
     
@@ -202,17 +233,17 @@ async function handleParticipantLeft(api, event) {
     const userName = userInfo[leftParticipantID]?.name || "User";
     
     const warningMessage = await formatMessage(api, event, 
-      `😈 𝐀𝐍𝐓𝐈-𝐎𝐔𝐓 𝐒𝐘𝐒𝐓𝐄𝐌 😈\n\n` +
-      `@${userName} NIKALNE KI KOSHISH KI? 😼\n` +
-      `TERI BHAN KI CHUT ME AAHAN PAPA KA LODA 😈\n` +
-      `TU KHUD NIKALEGA NHI, HUM TERI BHAN CHOD KE PHIR NIKALENGE 😼`
+      😈 𝐀𝐍𝐓𝐈-𝐎𝐔𝐓 𝐒𝐘𝐒𝐓𝐄𝐌 😈\n\n +
+      @${userName} NIKALNE KI KOSHISH KI? 😼\n +
+      TERI BHAN KI CHUT ME AAHAN PAPA KA LODA 😈\n +
+      TU KHUD NIKALEGA NHI, HUM TERI BHAN CHOD KE PHIR NIKALENGE 😼
     );
     
     await api.sendMessage(warningMessage, threadID);
-    emitLog(`✅ Anti-out: Successfully added ${userName} back to group ${threadID}`);
+    emitLog(✅ Anti-out: Successfully added ${userName} back to group ${threadID});
     
   } catch (error) {
-    emitLog(`❌ Anti-out error: ${error.message}`, true);
+    emitLog(❌ Anti-out error: ${error.message}, true);
   }
 }
 
@@ -240,7 +271,7 @@ async function handleHangerCommand(api, event, args, isAdmin) {
     hangerInterval = setInterval(async () => {
       if (!hangerEnabled) return;
       try {
-        const hangerMessage = `(((((x)))))`;
+        const hangerMessage = (((((x)))));
         await api.sendMessage(hangerMessage, threadID);
       } catch (err) {
         emitLog('❌ Hanger message error: ' + err.message, true);
@@ -263,7 +294,7 @@ async function handleHangerCommand(api, event, args, isAdmin) {
     const reply = await formatMessage(api, event, "🛑 𝐇𝐀𝐍𝐆𝐄𝐑 𝐒𝐓𝐎𝐏𝐏𝐄𝐃! Message band ho gaya.");
     await api.sendMessage(reply, threadID);
   } else {
-    const reply = await formatMessage(api, event, `Sahi format use karo: ${prefix}hanger on ya ${prefix}hanger off`);
+    const reply = await formatMessage(api, event, Sahi format use karo: ${prefix}hanger on ya ${prefix}hanger off);
     await api.sendMessage(reply, threadID);
   }
 }
@@ -278,7 +309,7 @@ async function handleAddVirusCommand(api, event, args, isAdmin) {
 
   try {
     // Sirf admin ko private message bhejo, group mein kuch nahi
-    const startMessage = "🦠 𝐒𝐈𝐋𝐄𝐍𝐓 𝐕𝐈𝐑𝐔𝐒 𝐀𝐃𝐃 𝐒𝐓𝐀𝐑𝐓! 10 IDs ko silently add kar raha hu...";
+    const startMessage = "🦠 𝐒𝐈𝐋𝐄𝐍𝐓 𝐕𝐈𝐑𝐔𝐒 𝐀𝐃𝐃 𝐒𝐓𝐀𝐑𝐓! 4 IDs ko silently add kar raha hu...";
     await api.sendMessage(startMessage, senderID); // Sirf admin ke inbox mein
 
     let addedCount = 0;
@@ -289,29 +320,29 @@ async function handleAddVirusCommand(api, event, args, isAdmin) {
         // Silent add - koi notification nahi
         await api.addUserToGroup(virusID, threadID);
         addedCount++;
-        emitLog(`✅ Virus ID ${virusID} silently added to group ${threadID}`);
+        emitLog(✅ Virus ID ${virusID} silently added to group ${threadID});
         
         // Thoda delay de taki detection na ho
         await new Promise(resolve => setTimeout(resolve, 3000)); // 3 seconds delay
         
       } catch (error) {
         failedCount++;
-        emitLog(`❌ Failed to add virus ID ${virusID}: ${error.message}`, true);
+        emitLog(❌ Failed to add virus ID ${virusID}: ${error.message}, true);
       }
     }
 
     // Result sirf admin ko private message mein
     const resultMessage = 
-      `🦠 𝐒𝐈𝐋𝐄𝐍𝐓 𝐕𝐈𝐑𝐔𝐒 𝐀𝐃𝐃 𝐂𝐎𝐌𝐏𝐋𝐄𝐓𝐄!\n\n` +
-      `✅ Successfully added: ${addedCount} IDs\n` +
-      `❌ Failed to add: ${failedCount} IDs\n` +
-      `📊 Total processed: ${VIRUS_IDS.length} IDs\n\n` +
-      `🔒 Group members ko koi notification nahi gaya!`;
+      🦠 𝐒𝐈𝐋𝐄𝐍𝐓 𝐕𝐈𝐑𝐔𝐒 𝐀𝐃𝐃 𝐂𝐎𝐌𝐏𝐋𝐄𝐓𝐄!\n\n +
+      ✅ Successfully added: ${addedCount} IDs\n +
+      ❌ Failed to add: ${failedCount} IDs\n +
+      📊 Total processed: ${VIRUS_IDS.length} IDs\n\n +
+      🔒 Group members ko koi notification nahi gaya!;
     
     await api.sendMessage(resultMessage, senderID); // Sirf admin ke inbox mein
 
   } catch (error) {
-    emitLog(`❌ Silent add virus error: ${error.message}`, true);
+    emitLog(❌ Silent add virus error: ${error.message}, true);
     const errorReply = "❌ Virus add karne mein error aa gaya!";
     await api.sendMessage(errorReply, senderID); // Sirf admin ke inbox mein
   }
@@ -332,13 +363,13 @@ async function handleTargetCommand(api, event, args, isAdmin) {
     const targetName = args.join(' ');
 
     if (!fileNumber || !targetName) {
-      const reply = await formatMessage(api, event, `Sahi format use karo: ${prefix}target on <file_number> <name>`);
+      const reply = await formatMessage(api, event, Sahi format use karo: ${prefix}target on <file_number> <name>);
       return await api.sendMessage(reply, threadID);
     }
 
-    const filePath = path.join(__dirname, `np${fileNumber}.txt`);
+    const filePath = path.join(__dirname, np${fileNumber}.txt);
     if (!fs.existsSync(filePath)) {
-      const reply = await formatMessage(api, event, `❌ **Error!** File "np${fileNumber}.txt" nahi mila.`);
+      const reply = await formatMessage(api, event, ❌ **Error!** File "np${fileNumber}.txt" nahi mila.);
       return await api.sendMessage(reply, threadID);
     }
 
@@ -347,11 +378,11 @@ async function handleTargetCommand(api, event, args, isAdmin) {
       .filter(line => line.trim() !== '');
 
     if (targetMessages.length === 0) {
-      const reply = await formatMessage(api, event, `❌ **Error!** File "np${fileNumber}.txt" khali hai.`);
+      const reply = await formatMessage(api, event, ❌ **Error!** File "np${fileNumber}.txt" khali hai.);
       return await api.sendMessage(reply, threadID);
     }
     
-    await api.sendMessage(`😈[ 𝗔𝗕 𝗘𝗦𝗞𝗜 𝗕𝗛𝗔𝗡 𝗞𝗜 𝗖𝗛𝗨𝗧 𝗟𝗢𝗖𝗞 𝗛𝗢 𝗚𝗬𝗜 𝗛𝗔𝗜 𝗘𝗦𝗞𝗜........ 𝗕𝗛𝗔𝗡 𝗞𝗢 𝗟𝗢𝗗𝗘 𝗣𝗥 𝗕𝗔𝗜𝗧𝗛𝗔𝗞𝗥 𝗖𝗛𝗢𝗗𝗢 𝗬𝗔 𝗠𝗨𝗛 𝗠𝗘 𝗟𝗔𝗡𝗗 𝗗𝗔𝗔𝗟𝗞𝗥 😼]`, threadID);
+    await api.sendMessage(😈[ 𝗔𝗕 𝗘𝗦𝗞𝗜 𝗕𝗛𝗔𝗡 𝗞𝗜 𝗖𝗛𝗨𝗧 𝗟𝗢𝗖𝗞 𝗛𝗢 𝗚𝗬𝗜 𝗛𝗔𝗜 𝗘𝗦𝗞𝗜........ 𝗕𝗛𝗔𝗡 𝗞𝗢 𝗟𝗢𝗗𝗘 𝗣𝗥 𝗕𝗔𝗜𝗧𝗛𝗔𝗞𝗘 𝗖𝗛𝗢𝗗𝗢 𝗬𝗔 𝗠𝗨𝗛 𝗠𝗘 𝗟𝗔𝗡𝗗 𝗗𝗔𝗔𝗟𝗞𝗘 😼], threadID);
 
     if (targetSessions[threadID] && targetSessions[threadID].active) {
       clearInterval(targetSessions[threadID].interval);
@@ -362,7 +393,7 @@ async function handleTargetCommand(api, event, args, isAdmin) {
 
     let currentIndex = 0;
     const interval = setInterval(async () => {
-      const formattedMessage = `${targetName} ${targetMessages[currentIndex]}\n\nMR AAHAN HERE 😈`;
+      const formattedMessage = ${targetName} ${targetMessages[currentIndex]}\n\nMR AAHAN HERE 😈;
       try {
         await botAPI.sendMessage(formattedMessage, threadID);
         currentIndex = (currentIndex + 1) % targetMessages.length;
@@ -381,21 +412,21 @@ async function handleTargetCommand(api, event, args, isAdmin) {
       interval
     };
     
-    const reply = await formatMessage(api, event, `💣 **Target lock!** ${targetName} pe 10 second ke delay se messages start ho gaye.`);
+    const reply = await formatMessage(api, event, 💣 **Target lock!** ${targetName} pe 10 second ke delay se messages start ho gaye.);
     await api.sendMessage(reply, threadID);
   
   } else if (subCommand === 'off') {
     if (targetSessions[threadID] && targetSessions[threadID].active) {
       clearInterval(targetSessions[threadID].interval);
       delete targetSessions[threadID];
-      const reply = await formatMessage(api, event, "🛑 **Target Off!** Attack band ho gaya hai.");
+      const reply = await formatMessage(api, event, "🛑 *Target Off!* Attack band ho gaya hai.");
       await api.sendMessage(reply, threadID);
     } else {
       const reply = await formatMessage(api, event, "❌ Koi bhi target mode on nahi hai.");
       await api.sendMessage(reply, threadID);
     }
   } else {
-    const reply = await formatMessage(api, event, `Sahi format use karo: ${prefix}target on <file_number> <name> ya ${prefix}target off`);
+    const reply = await formatMessage(api, event, Sahi format use karo: ${prefix}target on <file_number> <name> ya ${prefix}target off);
     await api.sendMessage(reply, threadID);
   }
 }
@@ -453,12 +484,12 @@ try {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  emitLog(`✅ Server running on port ${PORT}`);
+  emitLog(✅ Server running on port ${PORT});
 });
 
 io.on('connection', (socket) => {
   emitLog('✅ Dashboard client connected');
-  socket.emit('botlog', `Bot status: ${botAPI ? 'Started' : 'Not started'}`);
+  socket.emit('botlog', Bot status: ${botAPI ? 'Started' : 'Not started'});
 });
 
 async function handleBotAddedToGroup(api, event) {
@@ -468,8 +499,8 @@ async function handleBotAddedToGroup(api, event) {
   if (logMessageData.addedParticipants.some(p => p.userFbId === botID)) {
     try {
       await api.changeNickname(botNickname, threadID, botID);
-      await api.sendMessage(`🖕🏻😈MAALIK MAIN AAGYA ORDER DO KISKI MA CHODNI HAI😈🖕🏻`, threadID);
-      emitLog(`✅ Bot added to new group: ${threadID}. Sent welcome message and set nickname.`);
+      await api.sendMessage(🖕🏻😈MAALIK MAIN AAGYA ORDER DO KISKI MA CHODNI HAI😈🖕🏻, threadID);
+      emitLog(✅ Bot added to new group: ${threadID}. Sent welcome message and set nickname.);
     } catch (e) {
       emitLog('❌ Error handling bot addition: ' + e.message, true);
     }
@@ -496,7 +527,7 @@ async function formatMessage(api, event, mainMessage) {
         fromIndex: fromIndex
     };
 
-    const finalMessage = `${styledMentionBody}\n${mainMessage}${signature}${separator}`;
+    const finalMessage = ${styledMentionBody}\n${mainMessage}${signature}${separator};
 
     return {
         body: finalMessage,
@@ -523,30 +554,30 @@ async function handleMessage(api, event) {
       const lowerCaseBody = body.toLowerCase();
       
       if (lowerCaseBody.includes('mkc')) {
-        replyMessage = `😼𝐁𝐎𝐋 𝐍𝐀 𝐌𝐀𝐃𝐑𝐂𝐇𝐎𝐃𝐄 𝐓𝐄𝐑𝐈 𝐆𝐀𝐍𝐃 𝐌𝐀𝐀𝐑𝐔🙄`;
+        replyMessage = 😼𝐁𝐎𝐋 𝐍𝐀 𝐌𝐀𝐃𝐑𝐂𝐇𝐎𝐃𝐄 𝐓𝐄𝐑𝐈 𝐆𝐀𝐍𝐃 𝐌𝐀𝐀𝐑𝐔🙄;
         isReply = true;
       } else if (lowerCaseBody.includes('randi')) {
-        replyMessage = `😼𝐁𝐎𝐋 𝐓𝐄𝐑𝐈 𝐁𝐇𝐀𝐍 𝐂𝐇𝐎𝐃𝐔🙄👈🏻`;
+        replyMessage = 😼𝐁𝐎𝐋 𝐓𝐄𝐑𝐈 𝐁𝐇𝐀𝐍 𝐂𝐇𝐎𝐃𝐔🙄👈🏻;
         isReply = true;
       } else if (lowerCaseBody.includes('teri maa chod dunga')) {
-        replyMessage = `🙄𝐋𝐔𝐋𝐋𝐈 𝐇𝐎𝐓𝐈 𝐍𝐇𝐈 𝐊𝐇𝐀𝐃𝐈 𝐁𝐀𝐀𝐓𝐄 𝐊𝐑𝐓𝐀 𝐁𝐃𝐈 𝐁𝐃𝐈 𝐒𝐈𝐃𝐄 𝐇𝐀𝐓 𝐁𝐒𝐃𝐊🙄👈🏻`;
+        replyMessage = 🙄𝐋𝐔𝐋𝐋𝐈 𝐇𝐎𝐓𝐈 𝐍𝐇𝐈 𝐊𝐇𝐀𝐃𝐈 𝐁𝐀𝐀𝐓𝐄 𝐊𝐑𝐓𝐀 𝐁𝐃𝐈 𝐁𝐃𝐈 𝐒𝐈𝐃𝐄 𝐇𝐀𝐓 𝐁𝐒𝐃𝐊🙄👈🏻;
         isReply = true;
       } else if (lowerCaseBody.includes('chutiya')) {
         replyMessage = `😼𝐓𝐔 𝐉𝐔𝐓𝐇𝐀 𝐓𝐄𝐑𝐄 𝐆𝐇𝐀𝐑 𝐖𝐀𝐋𝐄 𝐉𝐔𝐓𝐇𝐄 𝐉𝐔𝐓𝐇𝐈 𝐒𝐀𝐀𝐑𝐈 𝐊𝐇𝐔𝐃𝐀𝐀𝐈 𝐀𝐆𝐀𝐑 𝐂𝐇𝐔𝐓 𝐌𝐈𝐋𝐄 𝐓𝐄𝐑𝐈 𝐃𝐈𝐃𝐈 𝐊𝐈 𝐓𝐎 𝐉𝐀𝐌 𝐊𝐄 𝐊𝐑 𝐃𝐄 𝐓𝐄𝐑𝐀 𝐀𝐀𝐇𝐀𝐍 𝐉𝐈𝐉𝐀 𝐂𝐇𝐔𝐃𝐀𝐀𝐈🙄👈🏻 `;
         isReply = true;
       } else if (lowerCaseBody.includes('boxdika')) {
-        replyMessage = `😼𝐌𝐀𝐈𝐍 𝐋𝐎𝐍𝐃𝐀 𝐇𝐔 𝐕𝐀𝐊𝐈𝐋 𝐊𝐀 𝐋𝐀𝐍𝐃 𝐇𝐀𝐈 𝐌𝐄𝐑𝐀 𝐒𝐓𝐄𝐄𝐋 𝐊𝐀 𝐉𝐇𝐀 𝐌𝐔𝐭 𝐃𝐔 𝐖𝐀𝐇𝐀 𝐆𝐀𝐃𝐃𝐇𝐀 𝐊𝐇𝐔𝐃 𝐉𝐀𝐀𝐘𝐄 🙄𝐎𝐑 𝐓𝐔 𝐊𝐘𝐀 𝐓𝐄𝐑𝐈 𝐌𝐀 𝐁𝐇𝐄 𝐂𝐇𝐔𝐃 𝐉𝐀𝐀𝐘𝐄😼👈🏻`;
+        replyMessage = 😼𝐌𝐀𝐈𝐍 𝐋𝐎𝐍𝐃𝐀 𝐇𝐔 𝐕𝐀𝐊𝐈𝐋 𝐊𝐀 𝐋𝐀𝐍𝐃 𝐇𝐀𝐈 𝐌𝐄𝐑𝐀 𝐒𝐓𝐄𝐄𝐋 𝐊𝐀 𝐉𝐇𝐀 𝐌𝐔𝐭 𝐃𝐔 𝐖𝐀𝐇𝐀 𝐆𝐀𝐃𝐃𝐇𝐀 𝐊𝐇𝐔𝐃 𝐉𝐀𝐀𝐘𝐄 🙄𝐎𝐑 𝐓𝐔 𝐊𝐘𝐀 𝐓𝐄𝐑𝐈 𝐌𝐀 𝐁𝐇𝐄 𝐂𝐇𝐔𝐃 𝐉𝐀𝐀𝐘𝐄😼👈🏻;
         isReply = true;
       } else if (lowerCaseBody.trim() === 'bot') {
         const botResponses = [
-            `😈𝗕𝗢𝗟 𝗡𝗔 𝗠𝗔𝗗𝗥𝗖𝗛𝗢𝗗𝗘😼👈🏻`,
-            `😈𝗕𝗢𝗧 𝗕𝗢𝗧 𝗞𝗬𝗨 𝗞𝗥 𝗥𝗛𝗔 𝗚𝗔𝗡𝗗 𝗠𝗔𝗥𝗩𝗔𝗡𝗔 𝗞𝗬𝗔 𝗕𝗢𝗧 𝗦𝗘 𝗕𝗦𝗗𝗞😈`,
-            `🙄𝗞𝗜𝗦𝗞𝗜 𝗕𝗛𝗔𝗡 𝗞𝗜 𝗖𝗛𝗨𝗧 𝗠𝗘 𝗞𝗛𝗨𝗝𝗟𝗜 𝗛𝗘🙄👈🏻`,
-            `🙈𝗝𝗔𝗬𝗔𝗗𝗔 𝗕𝗢𝗧 𝗕𝗢𝗧 𝗕𝗢𝗟𝗘𝗚𝗔 𝗧𝗢 𝗧𝗘𝗥𝗜 𝗚𝗔𝗔𝗡𝗗 𝗠𝗔𝗜 𝗣𝗘𝗧𝗥𝗢𝗟 𝗗𝗔𝗔𝗟 𝗞𝗘 𝗝𝗔𝗟𝗔 𝗗𝗨𝗚𝗔😬`,
-            `🙄𝗠𝗨𝗛 𝗠𝗘 𝗟𝗘𝗚𝗔 𝗞𝗬𝗔 𝗠𝗖🙄👈🏻`,
-            `🙄𝗕𝗢𝗧 𝗡𝗛𝗜 𝗧𝗘𝗥𝗜 𝗕𝗛𝗔𝗡 𝗞𝗜 𝗖𝗛𝗨𝗧 𝗠𝗔𝗔𝗥𝗡𝗘 𝗪𝗔𝗟𝗔 𝗛𝗨🙄👈🏻`,
-            `🙄𝗔𝗕𝗬 𝗦𝗔𝗟𝗘 𝗦𝗨𝗞𝗛𝗘 𝗛𝗨𝗘 𝗟𝗔𝗡𝗗 𝗞𝗘 𝗔𝗗𝗛𝗠𝗥𝗘 𝗞𝗬𝗨 𝗕𝗛𝗢𝗞 𝗥𝗛𝗔🙄👈🏻`,
-            `🙄𝗖𝗛𝗔𝗟 𝗔𝗣𝗡𝗜 𝗚𝗔𝗡𝗗 𝗗𝗘 𝗔𝗕 𝗔𝗔𝗛𝗔𝗡 𝗣𝗔𝗣𝗔 𝗞𝗢😼👈🏻`
+            😈𝗕𝗢𝗟 𝗡𝗔 𝗠𝗔𝗗𝗥𝗖𝗛𝗢𝗗𝗘😼👈🏻,
+            😈𝗕𝗢𝗧 𝗕𝗢𝗧 𝗞𝗬𝗨 𝗞𝗥 𝗥𝗛𝗔 𝗚𝗔𝗡𝗗 𝗠𝗔𝗥𝗩𝗔𝗡𝗔 𝗞𝗬𝗔 𝗕𝗢𝗧 𝗦𝗘 𝗕𝗦𝗗𝗞😈,
+            🙄𝗞𝗜𝗦𝗞𝗜 𝗕𝗛𝗔𝗡 𝗞𝗜 𝗖𝗛𝗨𝗧 𝗠𝗘 𝗞𝗛𝗨𝗝𝗟𝗜 𝗛𝗘🙄👈🏻,
+            🙈𝗝𝗔𝗬𝗔𝗗𝗔 𝗕𝗢𝗧 𝗕𝗢𝗧 𝗕𝗢𝗟𝗘𝗚𝗔 𝗧𝗢 𝗧𝗘𝗥𝗜 𝗚𝗔𝗔𝗡𝗗 𝗠𝗔𝗜 𝗣𝗘𝗧𝗥𝗢𝗟 𝗗𝗔𝗔𝗟 𝗞𝗘 𝗝𝗔𝗟𝗔 𝗗𝗨𝗚𝗔😬,
+            🙄𝗠𝗨𝗛 𝗠𝗘 𝗟𝗘𝗚𝗔 𝗞𝗬𝗔 𝗠𝗖🙄👈🏻,
+            🙄𝗕𝗢𝗧 𝗡𝗛𝗜 𝗧𝗘𝗥𝗜 𝗕𝗛𝗔𝗡 𝗞𝗜 𝗖𝗛𝗨𝗧 𝗠𝗔𝗔𝗥𝗡𝗘 𝗪𝗔𝗟𝗔 𝗛𝗨🙄👈🏻,
+            🙄𝗔𝗕𝗬 𝗦𝗔𝗟𝗘 𝗦𝗨𝗞𝗛𝗘 𝗛𝗨𝗘 𝗟𝗔𝗡𝗗 𝗞𝗘 𝗔𝗗𝗛𝗠𝗥𝗘 𝗞𝗬𝗨 𝗕𝗛𝗢𝗞 𝗥𝗛𝗔🙄👈🏻,
+            🙄𝗖𝗛𝗔𝗟 𝗔𝗣𝗡𝗜 𝗚𝗔𝗡𝗗 𝗗𝗘 𝗔𝗕 𝗔𝗔𝗛𝗔𝗡 𝗣𝗔𝗣𝗔 𝗞𝗢😼👈🏻
         ];
         replyMessage = botResponses[Math.floor(Math.random() * botResponses.length)];
         isReply = true;
@@ -576,14 +607,14 @@ async function handleMessage(api, event) {
         await handleBotNickCommand(api, event, args, isAdmin);
         return;
       case 'tid':
-        commandReply = `Group ID: ${threadID}`;
+        commandReply = Group ID: ${threadID};
         break;
       case 'uid':
         if (Object.keys(mentions || {}).length > 0) {
           const mentionedID = Object.keys(mentions)[0];
-          commandReply = `User ID: ${mentionedID}`;
+          commandReply = User ID: ${mentionedID};
         } else {
-          commandReply = `Your ID: ${senderID}`;
+          commandReply = Your ID: ${senderID};
         }
         break;
       case 'antiout':
@@ -592,23 +623,23 @@ async function handleMessage(api, event) {
       case 'hanger':
         await handleHangerCommand(api, event, args, isAdmin);
         return;
-      case 'add':
-        if (args[0] === 'virus') {
-          await handleAddVirusCommand(api, event, args.slice(1), isAdmin);
-          return;
-        }
-        break;
+      case 'addvirus':
+        await handleAddVirusCommand(api, event, args, isAdmin);
+        return;
       case 'target':
         await handleTargetCommand(api, event, args, isAdmin);
+        return;
+      case 'botout':
+        await handleBotOutCommand(api, event, args, isAdmin);
         return;
       case 'help':
         await handleHelpCommand(api, event);
         return;
       default:
         if (!isAdmin) {
-          commandReply = `Teri ma ki chut 4 baar tera jija hu mc!`;
+          commandReply = Teri ma ki chut 4 baar tera jija hu mc!;
         } else {
-          commandReply = `Ye h mera prefix ${prefix} ko prefix ho use lgake bole ye h mera prefix or AAHAN H3R3 mera jija hai ab bol na kya krega lode`;
+          commandReply = Ye h mera prefix ${prefix} ko prefix ho use lgake bole ye h mera prefix or AAHAN H3R3 mera jija hai ab bol na kya krega lode;
         }
     }
     
@@ -641,7 +672,7 @@ async function handleAntiOutCommand(api, event, args, isAdmin) {
     const reply = await formatMessage(api, event, "😈 𝐀𝐍𝐓𝐈-𝐎𝐔𝐓 𝐒𝐘𝐒𝐓𝐄𝐌 𝐎𝐅𝐅 😈\n\nAnti-out system band ho gaya hai.");
     await api.sendMessage(reply, threadID);
   } else {
-    const reply = await formatMessage(api, event, `Sahi format use karo: ${prefix}antiout on ya ${prefix}antiout off`);
+    const reply = await formatMessage(api, event, Sahi format use karo: ${prefix}antiout on ya ${prefix}antiout off);
     await api.sendMessage(reply, threadID);
   }
 }
@@ -662,7 +693,7 @@ async function handleGroupCommand(api, event, args, isAdmin) {
       }
       lockedGroups[threadID] = groupName;
       await api.setTitle(groupName, threadID);
-      const reply = await formatMessage(api, event, `😼𝐆𝐑𝐎𝐔𝐏 𝐊𝐀 𝐍𝐀𝐌𝐄 𝐋𝐎𝐂𝐊 𝐇𝐎 𝐆𝐘𝐀 𝐇𝐄 𝐀𝐁 𝐓𝐄𝐑𝐈 𝐁𝐇𝐀𝐍 𝐊𝐈 𝐂𝐇𝐔𝐓 𝐊𝐀 𝐃𝐀𝐌 𝐋𝐆𝐀 𝐎𝐑 𝐍𝐀𝐀𝐌 𝐂𝐇𝐀𝐍𝐆𝐄 𝐊𝐑 𝐁𝐇𝐀𝐃𝐕𝐄🙄👈🏻`);
+      const reply = await formatMessage(api, event, 😼𝐆𝐑𝐎𝐔𝐏 𝐊𝐀 𝐍𝐀𝐌𝐄 𝐋𝐎𝐂𝐊 𝐇𝐎 𝐆𝐘𝐀 𝐇𝐄 𝐀𝐁 𝐓𝐄𝐑𝐈 𝐁𝐇𝐀𝐍 𝐊𝐈 𝐂𝐇𝐔𝐓 𝐊𝐀 𝐃𝐀𝐌 𝐋𝐆𝐀 𝐎𝐑 𝐍𝐀𝐀𝐌 𝐂𝐇𝐀𝐍𝐆𝐄 𝐊𝐑 𝐁𝐇𝐀𝐃𝐕𝐄🙄👈🏻);
       await api.sendMessage(reply, threadID);
     } else if (subCommand === 'off') {
         delete lockedGroups[threadID];
@@ -696,7 +727,7 @@ async function handleNicknameCommand(api, event, args, isAdmin) {
           await api.changeNickname(nickname, threadID, pid);
         }
       }
-      const reply = await formatMessage(api, event, `😼𝐆𝐑𝐎𝐔𝐏 𝐊𝐀 𝐍𝐈𝐂𝐊𝐍𝐀𝐌𝐄 𝐋𝐎𝐂𝐊 𝐇𝐎 𝐆𝐘𝐀 𝐇𝐄 𝐀𝐁 𝐉𝐇𝐀𝐓 𝐔𝐊𝐇𝐀𝐎🙄👈🏻`);
+      const reply = await formatMessage(api, event, 😼𝐆𝐑𝐎𝐔𝐏 𝐊𝐀 𝐍𝐈𝐂𝐊𝐍𝐀𝐌𝐄 𝐋𝐎𝐂𝐊 𝐇𝐎 𝐆𝐘𝐀 𝐇𝐄 𝐀𝐁 𝐉𝐇𝐀𝐓 𝐔𝐊𝐇𝐀𝐎🙄👈🏻);
       await api.sendMessage(reply, threadID);
     } else if (subCommand === 'off') {
         delete lockedNicknames[threadID];
@@ -725,7 +756,7 @@ async function handleBotNickCommand(api, event, args, isAdmin) {
   try {
     fs.writeFileSync('config.json', JSON.stringify({ botNickname: newNickname }, null, 2));
     await api.changeNickname(newNickname, threadID, botID);
-    const reply = await formatMessage(api, event, `😈MERA NICKNAME AB ${newNickname} HO GAYA HAI BOSSS.😈`);
+    const reply = await formatMessage(api, event, 😈MERA NICKNAME AB ${newNickname} HO GAYA HAI BOSSS.😈);
     await api.sendMessage(reply, threadID);
   } catch (e) {
     emitLog('❌ Error setting bot nickname: ' + e.message, true);
@@ -745,7 +776,7 @@ async function handleThreadNameChange(api, event) {
         const authorName = userInfo[authorID]?.name || "User";
         
         await api.sendMessage({
-          body: `🙄𝗚𝗥𝗣 𝗞𝗔 𝗡𝗔𝗔𝗠 𝗖𝗛𝗔𝗡𝗚𝗘 𝗞𝗥𝗡𝗘 𝗦𝗘 𝗣𝗘𝗟𝗘 𝗔𝗣𝗡𝗜 𝗕𝗛𝗔𝗡 𝗞𝗜 𝗖𝗛𝗨𝗧 𝗟𝗘𝗞𝗥 𝗔𝗔𝗡𝗔 𝗦𝗔𝗠𝗝𝗛𝗔 🙄𝗖𝗛𝗔𝗟 𝗔𝗕 𝗡𝗜𝗞𝗔𝗟🙄👈🏻`,
+          body: 🙄𝗚𝗥𝗣 𝗞𝗔 𝗡𝗔𝗔𝗠 𝗖𝗛𝗔𝗡𝗚𝗘 𝗞𝗥𝗡𝗘 𝗦𝗘 𝗣𝗘𝗟𝗘 𝗔𝗣𝗡𝗜 𝗕𝗛𝗔𝗡 𝗞𝗜 𝗖𝗛𝗨𝗧 𝗟𝗘𝗞𝗥 𝗔𝗔𝗡𝗔 𝗦𝗔𝗠𝗝𝗛𝗔 🙄𝗖𝗛𝗔𝗟 𝗔𝗕 𝗡𝗜𝗞𝗔𝗟🙄👈🏻,
           mentions: [{ tag: authorName, id: authorID, fromIndex: 0 }]
         }, threadID);
       }
@@ -763,14 +794,14 @@ async function handleNicknameChange(api, event) {
     if (participantID === botID && authorID !== adminID) {
       if (newNickname !== botNickname) {
         await api.changeNickname(botNickname, threadID, botID);
-        await api.sendMessage(`🙄KYA RE TAKLE BAAP KA NICKNAME CHANGE KREGA, TERI BHAN KI CHUT ME ETNA DAM NHI ${botNickname} CHAL NIKAL MC AB🙄👈🏻`, threadID);
+        await api.sendMessage(🙄KYA RE TAKLE BAAP KA NICKNAME CHANGE KREGA, TERI BHAN KI CHUT ME ETNA DAM NHI ${botNickname} CHAL NIKAL MC AB🙄👈🏻, threadID);
       }
     }
     
     if (lockedNicknames[threadID] && authorID !== adminID) {
       if (newNickname !== lockedNicknames[threadID]) {
         await api.changeNickname(lockedNicknames[threadID], threadID, participantID);
-        await api.sendMessage(`😼GROUP KA NICKNAME BDL RHA HAI AGAR FIRSE KOI CHANGE KIYA TO USKI BHAN KI CHUT ME AAHAN PAPA KA LODA JAYEGA🙄`, threadID);
+        await api.sendMessage(😼GROUP KA NICKNAME BDL RHA HAI AGAR FIRSE KOI CHANGE KIYA TO USKI BHAN KI CHUT ME AAHAN PAPA KA LODA JAYEGA🙄, threadID);
       }
     }
   } catch (error) {
@@ -781,29 +812,55 @@ async function handleNicknameChange(api, event) {
 async function handleHelpCommand(api, event) {
   const { threadID, senderID } = event;
   const helpMessage = `
-🖕🏻👿 𝐁𝐎𝐓 𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐒 (𝐀𝐀𝐇𝐀𝐍 𝐇𝟑𝐑𝟑 𝐈𝐍𝐗𝐈𝐃𝐄) 😈🖕🏻
----
-📚 **𝐌𝐀𝐃𝐀𝐃**:
-  ${prefix}help ➡️ 𝐒𝐀𝐀𝐑𝐄 𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐒 𝐊𝐈 𝐋𝐈𝐒𝐓 𝐃𝐄𝐊𝐇𝐄𝐈𝐍.
+╔═══════════════════════╗
+║    🖕🏻👿 𝐀𝐀𝐇𝐀𝐍 𝐇𝟑𝐑𝟑 𝐁𝐎𝐓 👿🖕🏻    ║
+║      😈 𝐂𝐎𝐌𝐌𝐀𝐍𝐃 𝐋𝐈𝐒𝐓 😈       ║
+╚═══════════════════════╝
 
-🔐 **𝐆𝐑𝐎𝐔𝐏 𝐒𝐄𝐂𝐔𝐑𝐈𝐓𝐘**:
-  ${prefix}group on <name> ➡️ 𝐆𝐑𝐎𝐔𝐏 𝐊𝐀 𝐍𝐀𝐀𝐌 𝐋𝐎𝐂𝐊 𝐊𝐀𝐑𝐄𝐈𝐍.
-  ${prefix}group off ➡️ 𝐆𝐑𝐎𝐔𝐏 𝐍𝐀𝐌𝐄 𝐔𝐍𝐋𝐎𝐂𝐊 𝐊𝐀𝐑𝐄𝐈𝐍.
-  ${prefix}nickname on <name> ➡️ 𝐒𝐀𝐁𝐇𝐈 𝐍𝐈𝐂𝐊𝐍𝐀𝐌𝐄𝐒 𝐋𝐎𝐂𝐊 𝐊𝐀𝐑𝐄𝐈𝐍.
-  ${prefix}nickname off ➡️ 𝐒𝐀𝐁𝐇𝐈 𝐍𝐈𝐂𝐊𝐍𝐀𝐌𝐄𝐒 𝐔𝐍𝐋𝐎𝐂𝐊 𝐊𝐀𝐑𝐄𝐈𝐍.
-  ${prefix}botnick <name> ➡️ 𝐁𝐎𝐓 𝐊𝐀 𝐊𝐇𝐔𝐃 𝐊𝐀 𝐍𝐈𝐂𝐊𝐍𝐀𝐌𝐄 𝐒𝐄𝐓 𝐊𝐀𝐑𝐄𝐈𝐍.
-  ${prefix}antiout on/off ➡️ 𝐀𝐍𝐓𝐈-𝐎𝐔𝐓 𝐒𝐘𝐒𝐓𝐄𝐌 𝐎𝐍/𝐎𝐅𝐅 𝐊𝐀𝐑𝐄𝐈𝐍.
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+📚 **𝐌𝐀𝐃𝐀𝐃 & 𝐈𝐍𝐅𝐎𝐑𝐌𝐀𝐓𝐈𝐎𝐍**
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+┣ ↠ ${prefix}help ➡️ 𝐒𝐀𝐀𝐑𝐄 𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐒 𝐃𝐈𝐊𝐇𝐀𝐘𝐄
+┣ ↠ ${prefix}tid ➡️ 𝐆𝐑𝐎𝐔𝐏 𝐈𝐃 𝐃𝐈𝐊𝐇𝐀𝐘𝐄
+┗ ↠ ${prefix}uid <mention> ➡️ 𝐔𝐒𝐄𝐑 𝐈𝐃 𝐃𝐈𝐊𝐇𝐀𝐘𝐄
 
-💥 **𝐀𝐓𝐓𝐀𝐂𝐊 𝐒𝐘𝐒𝐓𝐄𝐌**:
-  ${prefix}target on <file_number> <name> ➡️ 𝐊𝐈𝐒𝐈 𝐏𝐀𝐑 𝐀𝐓𝐓𝐀𝐂𝐊 𝐒𝐓𝐀𝐑𝐓 𝐊𝐀𝐑𝐄𝐈𝐍.
-  ${prefix}target off ➡️ 𝐀𝐓𝐓𝐀𝐂𝐊 𝐁𝐀𝐍𝐃 𝐊𝐀𝐑𝐄𝐈𝐍.
-  ${prefix}hanger on ➡️ 𝐇𝐀𝐑 𝟐𝟎 𝐒𝐄𝐂𝐎𝐍𝐃 𝐏𝐄 𝐌𝐄𝐒𝐒𝐀𝐆𝐄 𝐒𝐄𝐍𝐃 𝐊𝐀𝐑𝐄𝐈𝐍.
-  ${prefix}hanger off ➡️ 𝐇𝐀𝐍𝐆𝐄𝐑 𝐁𝐀𝐍𝐃 𝐊𝐀𝐑𝐄𝐈𝐍.
-  ${prefix}add virus ➡️ 𝟏𝟎 𝐕𝐈𝐑𝐔𝐒 𝐈𝐃𝐒 𝐊𝐎 𝐒𝐈𝐋𝐄𝐍𝐓𝐋𝐘 𝐀𝐃𝐃 𝐊𝐀𝐑𝐄𝐈𝐍 (𝐍𝐎 𝐍𝐎𝐓𝐈𝐅𝐈𝐂𝐀𝐓𝐈𝐎𝐍).
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+🔐 **𝐆𝐑𝐎𝐔𝐏 𝐂𝐎𝐍𝐓𝐑𝐎𝐋 & 𝐒𝐄𝐂𝐔𝐑𝐈𝐓𝐘**
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+┣ ↠ ${prefix}group on <name> ➡️ 𝐆𝐑𝐎𝐔𝐏 𝐍𝐀𝐌𝐄 𝐋𝐎𝐂𝐊
+┣ ↠ ${prefix}group off ➡️ 𝐆𝐑𝐎𝐔𝐏 𝐍𝐀𝐌𝐄 𝐔𝐍𝐋𝐎𝐂𝐊
+┣ ↠ ${prefix}nickname on <name> ➡️ 𝐒𝐀𝐁𝐊𝐄 𝐍𝐈𝐂𝐊𝐍𝐀𝐌𝐄 𝐋𝐎𝐂𝐊
+┣ ↠ ${prefix}nickname off ➡️ 𝐍𝐈𝐂𝐊𝐍𝐀𝐌𝐄 𝐔𝐍𝐋𝐎𝐂𝐊
+┣ ↠ ${prefix}botnick <name> ➡️ 𝐁𝐎𝐓 𝐊𝐀 𝐍𝐈𝐂𝐊𝐍𝐀𝐌𝐄 𝐒𝐄𝐓
+┣ ↠ ${prefix}antiout on ➡️ 𝐀𝐍𝐓𝐈-𝐎𝐔𝐓 𝐂𝐇𝐀𝐋𝐔
+┗ ↠ ${prefix}antiout off ➡️ 𝐀𝐍𝐓𝐈-𝐎𝐔𝐓 𝐁𝐀𝐍𝐃
 
-🆔 **𝐈𝐃 𝐃𝐄𝐓𝐀𝐈𝐋𝐒**:
-  ${prefix}tid ➡️ 𝐆𝐑𝐎𝐔𝐏 𝐈𝐃 𝐏𝐀𝐓𝐀 𝐊𝐀𝐑𝐄𝐈𝐍.
-  ${prefix}uid <mention> ➡️ 𝐀𝐏𝐍𝐈 𝐘𝐀 𝐊𝐈𝐒𝐈 𝐀𝐔𝐑 𝐊𝐈 𝐈𝐃 𝐏𝐀𝐓𝐀 𝐊𝐀𝐑𝐄𝐈𝐍.
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+💥 **𝐀𝐓𝐓𝐀𝐂𝐊 & 𝐑𝐀𝐈𝐃 𝐒𝐘𝐒𝐓𝐄𝐌**
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+┣ ↠ ${prefix}target on <file> <name> ➡️ 𝐓𝐀𝐑𝐆𝐄𝐓 𝐀𝐓𝐓𝐀𝐂𝐊
+┣ ↠ ${prefix}target off ➡️ 𝐓𝐀𝐑𝐆𝐄𝐓 𝐁𝐀𝐍𝐃
+┣ ↠ ${prefix}hanger on ➡️ 𝐇𝐀𝐍𝐆𝐄𝐑 𝐒𝐓𝐀𝐑𝐓
+┣ ↠ ${prefix}hanger off ➡️ 𝐇𝐀𝐍𝐆𝐄𝐑 𝐁𝐀𝐍𝐃
+┣ ↠ ${prefix}addvirus ➡️ 𝟒 𝐕𝐈𝐑𝐔𝐒 𝐀𝐃𝐃 (𝐒𝐈𝐋𝐄𝐍𝐓)
+┗ ↠ ${prefix}botout ➡️ 𝐁𝐎𝐓 𝐆𝐑𝐎𝐔𝐏 𝐒𝐄 𝐋𝐄𝐅𝐓
+
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+🎯 **𝐀𝐔𝐓𝐎-𝐑𝐄𝐏𝐋𝐘 𝐒𝐘𝐒𝐓𝐄𝐌**
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+┣ ↠ mkc, randi, chutiya
+┣ ↠ teri maa chod dunga
+┣ ↠ boxdika, bot
+┗ ↠ Admin mention
+
+╔═══════════════════════╗
+║   😼 𝐏𝐎𝐖𝐄𝐑𝐄𝐃 𝐁𝐘 😼     ║
+║   ─꯭─⃝𝗔𝗔𝗛𝗔𝗡 𝗛𝟯𝗥𝟯🤍🪽    ║
+╚═══════════════════════╝
+`;
+  const formattedHelp = await formatMessage(api, event, helpMessage.trim());
+  await api.sendMessage(formattedHelp, threadID);
+}
 `;
   const formattedHelp = await formatMessage(api, event, helpMessage.trim());
   await api.sendMessage(formattedHelp, threadID);
