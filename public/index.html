@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AAHAN H3R3 BOT | CONTROL PANEL</title>
+    <style>
+        :root {
+            --primary: #ff2d55;
+            --secondary: #5856d6;
+            --dark: #1a1a1a;
+            --darker: #0d0d0d;
+            --light: #ffffff;
+            --gray: #8e8e93;
+            --success: #4cd964;
+            --danger: #ff3b30;
+            --warning: #ffcc00;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: var(--darker);
+            color: var(--light);
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #000000 0%, #1a1a2e 50%, #16213e 100%);
+            z-index: -2;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 30px 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid var(--primary);
+            border-radius: 15px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 45, 85, 0.1), transparent);
+            animation: scan 3s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .glitch-text {
+            font-size: 2.5em;
+            font-weight: bold;
+            text-transform: uppercase;
+            position: relative;
+            text-shadow: 0.05em 0 0 #ff2d55, -0.05em -0.025em 0 #5856d6;
+            animation: glitch 2s infinite;
+        }
+
+        @keyframes glitch {
+            0% { text-shadow: 0.05em 0 0 #ff2d55, -0.05em -0.025em 0 #5856d6; }
+            14% { text-shadow: 0.05em 0 0 #ff2d55, -0.05em -0.025em 0 #5856d6; }
+            15% { text-shadow: -0.05em -0.025em 0 #ff2d55, 0.025em 0.025em 0 #5856d6; }
+            49% { text-shadow: -0.05em -0.025em 0 #ff2d55, 0.025em 0.025em 0 #5856d6; }
+            50% { text-shadow: 0.025em 0.05em 0 #ff2d55, 0.05em 0 0 #5856d6; }
+            99% { text-shadow: 0.025em 0.05em 0 #ff2d55, 0.05em 0 0 #5856d6; }
+            100% { text-shadow: -0.025em 0 0 #ff2d55, -0.025em -0.025em 0 #5856d6; }
+        }
+
+        .subtitle {
+            color: var(--gray);
+            font-size: 1.1em;
+            margin-top: 10px;
+        }
+
+        .panel {
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid var(--primary);
+            border-radius: 10px;
+            padding: 30px;
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        .panel::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .panel-title {
+            color: var(--primary);
+            font-size: 1.4em;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            color: var(--gray);
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--gray);
+            border-radius: 5px;
+            padding: 12px;
+            color: var(--light);
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(255, 45, 85, 0.3);
+        }
+
+        .form-textarea {
+            height: 120px;
+            resize: vertical;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 45, 85, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--gray);
+            border-radius: 5px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.8em;
+            text-transform: uppercase;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        .status-online {
+            background: var(--success);
+        }
+
+        .status-offline {
+            background: var(--danger);
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--gray);
+            border-top: 2px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+            background: rgba(255, 255, 255, 0.05);
+            text-align: center;
+        }
+
+        .alert-success {
+            border-left-color: var(--success);
+            color: var(--success);
+        }
+
+        .alert-error {
+            border-left-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .alert-warning {
+            border-left-color: var(--warning);
+            color: var(--warning);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .log-container {
+            background: #000;
+            border: 1px solid var(--primary);
+            border-radius: 5px;
+            padding: 15px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8em;
+            line-height: 1.4;
+            margin-top: 20px;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+            color: var(--gray);
+        }
+
+        .log-success {
+            color: var(--success);
+        }
+
+        .log-error {
+            color: var(--danger);
+        }
+
+        .log-warning {
+            color: var(--warning);
+        }
+    </style>
+</head>
+<body>
+    <div class="matrix-bg"></div>
+    
+    <div class="container">
+        <div class="header">
+            <div class="glitch-text">AAHAN H3R3 BOT</div>
+            <div class="subtitle">SYSTEM CONFIGURATION PANEL</div>
+        </div>
+
+        <div id="alert-container"></div>
+
+        <!-- Only Configuration Panel -->
+        <div class="panel">
+            <div class="panel-title">⚙️ SYSTEM CONFIGURATION</div>
+            <form id="config-form">
+                <div class="form-group">
+                    <label class="form-label">FACEBOOK COOKIES (JSON)</label>
+                    <textarea 
+                        class="form-input form-textarea" 
+                        id="cookies"
+                        placeholder='[{"name": "c_user", "value": "1000..."}, {"name": "xs", "value": "20..."}]'
+                        required
+                    ></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">COMMAND PREFIX</label>
+                    <input 
+                        type="text" 
+                        class="form-input" 
+                        id="prefix" 
+                        value="/"
+                        placeholder="Command prefix"
+                        required
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">ADMIN FACEBOOK ID</label>
+                    <input 
+                        type="text" 
+                        class="form-input" 
+                        id="adminID"
+                        placeholder="100000000000000"
+                        required
+                    >
+                </div>
+                
+                <button type="submit" class="btn" id="start-btn">
+                    🚀 INITIATE BOT SYSTEM
+                </button>
+            </form>
+
+            <div class="log-container" id="log-container">
+                <div class="log-entry">🤖 System ready for configuration...</div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="bot-status">OFFLINE</div>
+                    <div class="stat-label">SYSTEM STATUS</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="command-count">0</div>
+                    <div class="stat-label">COMMANDS</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="log-count">0</div>
+                    <div class="stat-label">LOG ENTRIES</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // Socket.io connection
+        const socket = io();
+        let commandCount = 0;
+        let logCount = 0;
+
+        // DOM Elements
+        const configForm = document.getElementById('config-form');
+        const startBtn = document.getElementById('start-btn');
+        const botStatus = document.getElementById('bot-status');
+        const commandCountEl = document.getElementById('command-count');
+        const logCountEl = document.getElementById('log-count');
+        const alertContainer = document.getElementById('alert-container');
+        const logContainer = document.getElementById('log-container');
+
+        // Socket event listeners
+        socket.on('connect', () => {
+            addLog('✅ Connected to bot server', 'success');
+            botStatus.textContent = 'ONLINE';
+            botStatus.style.color = 'var(--success)';
+        });
+
+        socket.on('disconnect', () => {
+            addLog('❌ Disconnected from bot server', 'error');
+            botStatus.textContent = 'OFFLINE';
+            botStatus.style.color = 'var(--danger)';
+        });
+
+        socket.on('botlog', (message) => {
+            addLog(message);
+            updateStats();
+        });
+
+        socket.on('groupsUpdate', (groups) => {
+            addLog(`📊 Groups updated: ${groups.length} groups`, 'success');
+        });
+
+        // Form submission
+        configForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const cookies = document.getElementById('cookies').value;
+            const prefix = document.getElementById('prefix').value;
+            const adminID = document.getElementById('adminID').value;
+
+            if (!cookies || !prefix || !adminID) {
+                showAlert('Please fill in all fields', 'error');
+                return;
+            }
+
+            try {
+                JSON.parse(cookies);
+            } catch (error) {
+                showAlert('Invalid cookies format. Please provide valid JSON.', 'error');
+                return;
+            }
+
+            startBtn.innerHTML = '<div class="loading"></div> INITIALIZING BOT SYSTEM...';
+            startBtn.disabled = true;
+
+            try {
+                const response = await fetch('/configure', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        cookies: cookies,
+                        prefix: prefix,
+                        adminID: adminID
+                    })
+                });
+
+                const result = await response.text();
+                
+                if (response.ok) {
+                    showAlert('Bot started successfully!', 'success');
+                    addLog('🚀 Bot configuration submitted and starting...', 'success');
+                    botStatus.textContent = 'DEPLOYING';
+                    botStatus.style.color = 'var(--warning)';
+                    commandCount++;
+                    updateStats();
+                } else {
+                    showAlert('Error: ' + result, 'error');
+                    addLog('❌ Bot startup failed: ' + result, 'error');
+                }
+            } catch (error) {
+                showAlert('Network error: ' + error.message, 'error');
+                addLog('❌ Network connection failed', 'error');
+            } finally {
+                startBtn.innerHTML = '🚀 INITIATE BOT SYSTEM';
+                startBtn.disabled = false;
+            }
+        });
+
+        // Utility functions
+        function addLog(message, type = '') {
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type ? 'log-' + type : ''}`;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            logEntry.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+            
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            
+            logCount++;
+            updateStats();
+        }
+
+        function updateStats() {
+            commandCountEl.textContent = commandCount;
+            logCountEl.textContent = logCount;
+        }
+
+        function showAlert(message, type = 'info') {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            
+            alertContainer.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+
+        // Check if config exists and auto-start
+        window.addEventListener('load', () => {
+            addLog('🤖 AAHAN H3R3 Bot Control Panel loaded', 'success');
+            addLog('📍 Configure your bot settings and click "INITIATE BOT SYSTEM"', '');
+            
+            // Check if we're already connected to a running bot
+            fetch('/status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'running') {
+                        addLog('🔄 Bot is already running...', 'success');
+                        botStatus.textContent = 'RUNNING';
+                        botStatus.style.color = 'var(--success)';
+                    }
+                })
+                .catch(() => {
+                    // Server not responding or no status endpoint
+                    addLog('⚡ Ready to configure bot system', '');
+                });
+        });
+    </script>
+</body>
+</html>
